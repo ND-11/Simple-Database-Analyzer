@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Database Analyzer</title>
+  <link rel="icon" type="image/x-icon" href="/static/img/icon.png">
+  <link rel="stylesheet" href="/static/css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" />
+</head>
+
+<body>
+  <header>
+    <a class="logo" href="/">
+      <h1>Database Analyzer</h1>
+    </a>
+    <ul class="ul-header">
+      <li>
+        <a class="mode" onclick="myFunction()" title="Toggle Mode">
+          <div class="icon-container">
+            <i id="sunIcon" class="fa-solid fa-sun icon"></i>
+            <i id="moonIcon" class="fa-solid fa-moon icon hidden"></i>
+          </div>
+        </a>
+      </li>
+    </ul>
+  </header>
+
+  <article>
+
+    <div class="circ circ-1"></div>
+    <div class="circ circ-2"></div>
+    <div class="circ circ-3"></div>
+
+    <div id="flex" class="row">
+      <div id="upload" class="column">
+        <form action="/upload" method="post" enctype="multipart/form-data">
+          <div class="modal">
+            <div class="modal-body">
+              <h2 class="modal-title">Upload a file</h2>
+              <p class="modal-description">Attach the file below</p>
+              <div class="upload-area" title="Upload a file">
+                <input type="file" name="fileInput" id="fileInput" accept=".db" style="display: none">
+                <div class="uploaded-file-info">
+                  <i class="fa-solid fa-file-export"></i>
+                  <span class="upload-area-title">Drag file(s) here to upload.</span>
+                </div>
+                <span class="upload-area-description">
+                  Alternatively, you can select a file by <br /><strong>clicking here</strong>
+                </span>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="submit" id="processButton" onclick="startProcess()" disabled>Process</button>
+              <div class="progress-bar" id="progressBar">
+                <div class="progress-bar-value" id="progressBarValue"></div>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div id="description" class="column">
+        <h1 class="title">Database Analyzer</h1>
+        <p>This small project is a platform for me to improve my skills and gain more practice. Your feedback and advice
+          are greatly appreciated. You can find my contact information in the footer.</p>
+        <hr>
+        <h2 class="sub-title">Key Features:</h2>
+        <ul class="ul-features">
+          <li>Identify Missing Data</li>
+          <li>Detect Duplicate Rows</li>
+          <li>Query Speed Testing</li>
+          <li>CSV Export</li>
+        </ul>
+
+        <p>You'll find a box to upload the file. Currently, it's tested for SQLite databases.</p>
+
+        <br>
+        {% if execution_time or missing_cells_info or duplicate_records_info %}
+        <button id="resultBtn">Results</button>
+        <button id="downloadButton">Download CSV(s)</button>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- The Modal -->
+    <div id="resultModal" class="result">
+      <!-- Modal content -->
+      <div class="result-content">
+        <span class="close">&times;</span>
+        {% if execution_time != None %}
+        <h2 class="sub-title">Execution Time: </h2>
+        <p>{{ execution_time }} <strong>seconds</strong></p>
+        <br>
+        <h2 class="sub-title">Missing Cells: </h2>
+        <p>{{ missing_cells_info | safe }}</p>
+        <br>
+        <h2 class="sub-title">Duplicate Rows: </h2>
+        <p>{{ duplicate_records_info | safe }}</p>
+        {% else %}
+        <h2 class="sub-title">The Database is Empty</h2>
+        {% endif %}
+      </div>
+    </div>
+
+  </article>
+  <footer>
+    <h2>&copy; 2023 ND</h2>
+    <ul class="ul-footer">
+      <li><a href="https://github.com/ND-11" target="_blank" title="GitHub"><i class="fa-brands fa-github"></i></a></li>
+      <li><a href="https://codepen.io/ND-11" target="_blank" title="CodePen"><i class="fa-brands fa-codepen"></i></a>
+      </li>
+      <li><a href="https://twitter.com/_ND_ND" target="_blank" title="X"><i class="fa-brands fa-x-twitter"></i></a></li>
+    </ul>
+  </footer>
+</body>
+<script>
+
+  // File upload functionality
+  const uploadArea = document.querySelector('.upload-area');
+  const fileInput = document.getElementById('fileInput');
+  const uploadedFileInfo = document.querySelector('.uploaded-file-info');
+  const uploadAreaDescription = document.querySelector('.upload-area-description');
+
+  function updateUploadAreaWithFileName(fileName) {
+    uploadedFileInfo.innerHTML = fileName;
+    uploadAreaDescription.innerHTML = "You can change the file by <br /><strong>clicking here</strong>";
+  }
+  uploadArea.addEventListener('click', () => {
+    fileInput.click();
+  });
+  uploadArea.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    uploadArea.classList.add('drag-over');
+  });
+  uploadArea.addEventListener('dragleave', () => {
+    uploadArea.classList.remove('drag-over');
+  });
+  uploadArea.addEventListener('drop', (e) => {
+    e.preventDefault();
+    uploadArea.classList.remove('drag-over');
+    const files = e.dataTransfer.files;
+    if (files.length === 1 && files[0].name.endsWith('.db')) {
+      updateUploadAreaWithFileName(files[0].name);
+      // Handle the file here
+      console.log('File uploaded:', files[0].name);
+    } else {
+      alert('Please upload only one .db file.');
+    }
+  });
+  fileInput.addEventListener('change', () => {
+    const file = fileInput.files[0];
+    if (file && file.name.endsWith('.db')) {
+      updateUploadAreaWithFileName(file.name);
+      // Handle the file here
+      console.log('File uploaded:', file.name);
+    } else {
+      alert('Please upload a .db file.');
+    }
+  });
+  document.getElementById('fileInput').addEventListener('change', function () {
+    const processButton = document.getElementById("processButton");
+    if (this.files.length === 1 && this.files[0].name.endsWith('.db')) {
+      processButton.removeAttribute("disabled");
+    } else {
+      processButton.setAttribute("disabled", "disabled");
+    }
+  });
+
+
+
+  // Dark/ Light Mode Toggle
+  function myFunction() {
+    var element = document.body;
+    element.classList.toggle("dark-mode");
+
+    var sunIcon = document.getElementById("sunIcon");
+    var moonIcon = document.getElementById("moonIcon");
+
+    if (element.classList.contains("dark-mode")) {
+      sunIcon.classList.add("hidden");
+      moonIcon.classList.remove("hidden");
+      localStorage.setItem("mode", "dark");
+    } else {
+      moonIcon.classList.add("hidden");
+      sunIcon.classList.remove("hidden");
+      localStorage.setItem("mode", "light");
+    }
+  }
+
+  // Retrieve the user's mode from localStorage and apply it on page load
+  document.addEventListener("DOMContentLoaded", function () {
+    const storedMode = localStorage.getItem("mode");
+    if (storedMode === "dark") {
+      document.body.classList.add("dark-mode");
+      var sunIcon = document.getElementById("sunIcon");
+      var moonIcon = document.getElementById("moonIcon");
+      sunIcon.classList.add("hidden");
+      moonIcon.classList.remove("hidden");
+    }
+  });
+
+
+  // Hide the button and display the progress bar and disable the file input
+  function startProcess() {
+    const processButton = document.getElementById("processButton");
+    const progressBar = document.getElementById("progressBar");
+    const fileInput = document.getElementById("fileInput");
+    processButton.style.display = "none";
+    progressBar.style.display = "block";
+    fileInput.readonly = true;
+  }
+
+
+  //Modal funcunality for results
+  var modal = document.getElementById("resultModal");
+  var btn = document.getElementById("resultBtn");
+  var span = document.getElementsByClassName("close")[0];
+  btn.onclick = function () {
+    modal.style.display = "block";
+  };
+  span.onclick = function () {
+    modal.classList.add("fadeOut");
+    setTimeout(function () {
+      modal.style.display = "none";
+      modal.classList.remove("fadeOut");
+    }, 200);
+  };
+  window.onclick = function (event) {
+    if (event.target == modal) {
+      modal.classList.add("fadeOut");
+      setTimeout(function () {
+        modal.style.display = "none";
+        modal.classList.remove("fadeOut");
+      }, 200);
+    }
+  };
+
+  // Download CSV(s) button
+  document.getElementById('downloadButton').addEventListener('click', function () {
+    window.location.href = '/download_zip';
+  });
+
+</script>
+
+</html>

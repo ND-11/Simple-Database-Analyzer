@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>404</title>
+  <link rel="icon" type="image/x-icon" href="/static/img/icon.png">
+  <link rel="stylesheet" href="/static/css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" />
+</head>
+
+<body>
+  <header>
+    <a class="logo" href="/">
+      <h1>Database Analyzer</h1>
+    </a>
+    <ul class="ul-header">
+      <li>
+        <a class="mode" onclick="myFunction()" title="Toggle Mode">
+          <div class="icon-container">
+            <i id="sunIcon" class="fa-solid fa-sun icon"></i>
+            <i id="moonIcon" class="fa-solid fa-moon icon hidden"></i>
+          </div>
+        </a>
+      </li>
+      <!-- <li><button class="git-button">GitHub <i class="fa-brands fa-github"></i></button></li> -->
+    </ul>
+  </header>
+
+  <article>
+
+    <div class="circ circ-1"></div>
+    <div class="circ circ-2"></div>
+    <div class="circ circ-3"></div>
+
+    <h1 class="error">ERROR | 404</h1>
+    <p class="error">The page you are looking for could not be found.</p>
+
+  </article>
+  <footer>
+    <h2>&copy; 2023 ND</h2>
+    <ul class="ul-footer">
+      <li><a href="https://github.com/ND-11" target="_blank" title="GitHub"><i class="fa-brands fa-github"></i></a></li>
+      <li><a href="https://codepen.io/ND-11" target="_blank" title="CodePen"><i class="fa-brands fa-codepen"></i></a>
+      </li>
+      <li><a href="https://twitter.com/_ND_ND" target="_blank" title="X"><i class="fa-brands fa-x-twitter"></i></a></li>
+    </ul>
+  </footer>
+</body>
+<script>
+  // Dark/ Light Mode Toggle
+  function myFunction() {
+    var element = document.body;
+    element.classList.toggle("dark-mode");
+
+    var sunIcon = document.getElementById("sunIcon");
+    var moonIcon = document.getElementById("moonIcon");
+
+    if (element.classList.contains("dark-mode")) {
+      sunIcon.classList.add("hidden");
+      moonIcon.classList.remove("hidden");
+      // Store the user's mode in localStorage
+      localStorage.setItem("mode", "dark");
+    } else {
+      moonIcon.classList.add("hidden");
+      sunIcon.classList.remove("hidden");
+      // Store the user's mode in localStorage
+      localStorage.setItem("mode", "light");
+    }
+  }
+
+  // Retrieve the user's mode from localStorage and apply it on page load
+  document.addEventListener("DOMContentLoaded", function () {
+    const storedMode = localStorage.getItem("mode");
+    if (storedMode === "dark") {
+      document.body.classList.add("dark-mode");
+    }
+  });
+</script>
+
+</html>
