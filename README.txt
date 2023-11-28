@@ -7,7 +7,7 @@ The project includes two HTML pages:
 1. **index.html**: This page provides a project description and allows users to upload an SQLite database. After uploading, users can execute a random query, find duplicate records, identify missing cells, and download a zip file containing CSV versions of each table.
 2. **error.html**: A custom error page for HTTP 404 errors.
 
-Demo avalible until February 2024 here: http://dbanalyzer.online/
+Demo avalible until February 2024 here: https://nd11.pythonanywhere.com/
 
 Folder Structure:
 repository/
